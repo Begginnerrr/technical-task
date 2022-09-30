@@ -4,18 +4,26 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Repository\ResolvedAddressRepository;
-use App\Service\DummyGeocoder;
+use GuzzleHttp\Client;
+use App\ValueObject\Address;
 use App\Service\DummyService;
+use App\Service\DummyGeocoder;
 use App\Service\GeocoderAccess;
 use App\Service\GeocoderInterface;
-use App\ValueObject\Address;
-use GuzzleHttp\Client;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use App\Service\GoogleMapsGeocoder;
+use App\Service\GoogleGeocoderAccess;
+use App\Service\GoogleMapsGeocoderAccess;
+use App\Service\CachedOptimalGeocoderAccess;
+use App\Repository\ResolvedAddressRepository;
+use App\Service\CachedGoogleGeocoderAccess;
+use App\Service\CachedHmapsGeocoderAccess;
+use App\Service\GeocoderCacheAccess;
+use App\Service\HmapsGeocoderAccess;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class CoordinatesController extends AbstractController
 {
@@ -40,20 +48,17 @@ class CoordinatesController extends AbstractController
 
         $address = new Address($country, $city, $street, $postcode);
 
-        #$row = $repository->getByAddress($address);
-
-        # $coordinates = $this->geocoder->geocode($address);
-        # $coordinates = $this->geocoder->useGoogleGeocoder($address);
-        # $coordinates = $this->geocoder->useHmapsGeocoder($address); 
-        #$coordinates = $this->geocoder->useGeocoderCache($address,$repository);
-        $coordinates = $this->geocoder->useFullStack($address, $repository);
+        $usedGeocoder = new CachedOptimalGeocoderAccess();
+        # $usedGeocoder = new GoogleGeocoderAccess();
+        # $usedGeocoder = new CachedGoogleGeocoderAccess();
+        # $usedGeocoder = new HmapsGeocoderAccess();
+        # $usedGeocoder = new CachedHmapsGeocoderAccess();
+        # $usedGeocoder =  new GeocoderCacheAccess();
+        $coordinates = $this->geocoder->geocoderAccess($usedGeocoder, $address, $repository);
 
         if (null === $coordinates) {
             return new JsonResponse([]);
         }
-
-        # $repository->saveResolvedAddress($address, $coordinates);
-
         return new JsonResponse(['lat' => $coordinates->getLat(), 'lng' => $coordinates->getLng()]);
     }
 
