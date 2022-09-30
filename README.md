@@ -57,6 +57,6 @@ then go to `http://localhost/coordinates` and it should return
 {"lat":55.90742079144914,"lng":21.135541627577837}
 ```
 
-JSON. If you want to check different address, then add params to url: http://localhost/coordinates?countryCode=lithuania&city=vilnius&street=gedimino+9&postcode=12345 . 
+JSON. If you want to check different address, then add params to url: http://localhost/coordinates?countryCode=lt&city=vilnius&street=gedimino+9&postcode=12345 . 
 
 And that's it, good luck!

@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Repository\ResolvedAddressRepository;
+use App\Service\DummyGeocoder;
+use App\Service\DummyService;
+use App\Service\GeocoderAccess;
 use App\Service\GeocoderInterface;
 use App\ValueObject\Address;
 use GuzzleHttp\Client;
@@ -16,9 +19,9 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class CoordinatesController extends AbstractController
 {
-    private GeocoderInterface $geocoder;
-
-    public function __construct(GeocoderInterface $geocoder)
+    # private GeocoderInterface $geocoder;
+    private GeocoderAccess $geocoder;
+    public function __construct(GeocoderAccess $geocoder)
     {
         $this->geocoder = $geocoder;
     }
@@ -37,15 +40,19 @@ class CoordinatesController extends AbstractController
 
         $address = new Address($country, $city, $street, $postcode);
 
-        $row = $repository->getByAddress($address);
+        #$row = $repository->getByAddress($address);
 
-        $coordinates = $this->geocoder->geocode($address);
+        # $coordinates = $this->geocoder->geocode($address);
+        # $coordinates = $this->geocoder->useGoogleGeocoder($address);
+        # $coordinates = $this->geocoder->useHmapsGeocoder($address); 
+        #$coordinates = $this->geocoder->useGeocoderCache($address,$repository);
+        $coordinates = $this->geocoder->useFullStack($address, $repository);
 
         if (null === $coordinates) {
             return new JsonResponse([]);
         }
 
-        $repository->saveResolvedAddress($address, $coordinates);
+        # $repository->saveResolvedAddress($address, $coordinates);
 
         return new JsonResponse(['lat' => $coordinates->getLat(), 'lng' => $coordinates->getLng()]);
     }
